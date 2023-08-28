@@ -41,6 +41,8 @@ var (
 		"$SYS/broker/uptime":                    "The total number of seconds since the broker started.",
 		"$SYS/broker/clients/maximum":           "The maximum number of clients connected simultaneously since the broker started",
 		"$SYS/broker/clients/total":             "The total number of clients connected since the broker started.",
+		"$SYS/broker/store/messages/count":      "The total number of messages in the message store.",
+		"$SYS/broker/store/messages/bytes":      "The total number of bytes used to store messages.",
 	}
 	counterMetrics = map[string]*MosquittoCounter{}
 	gaugeMetrics   = map[string]prometheus.Gauge{}

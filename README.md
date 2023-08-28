@@ -1,4 +1,4 @@
-Mosquitto Exporter
+Mosquitto Exporter - Teknoir Fork
 =============================
 Prometheus exporter for the [Mosquitto MQTT message broker](https://mosquitto.org/).
 

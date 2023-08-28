@@ -1,20 +1,14 @@
-FROM golang:1.17-buster AS build
+FROM golang:1.21 AS build
 
 WORKDIR /go/src/app
 
-## Download modules and store, this optimizes use of Docker image cache
-COPY go.mod .
-COPY go.sum .
-RUN go mod download
-
 COPY . .
 
-RUN make build
+RUN GO111MODULE=on CGO_ENABLED=0 go build -o mosquitto_exporter -a -ldflags '-extldflags "-static"' .
 
 FROM scratch
-LABEL source_repository="https://github.com/sapcc/mosquitto-exporter"
 
-COPY --from=build /go/src/app/bin/mosquitto_exporter /mosquitto_exporter
+COPY --from=build /go/src/app/mosquitto_exporter /mosquitto_exporter
 
 EXPOSE 9234
 

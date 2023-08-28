@@ -1,0 +1,49 @@
+timeout: '18000s'
+
+options:
+  env:
+    - DOCKER_CLI_EXPERIMENTAL=enabled
+
+steps:
+  - id: INIT-BUILDX_BUILDER
+    name: gcr.io/cloud-builders/docker
+    entrypoint: 'bash'
+    args:
+      - -c
+      - |
+        docker run --privileged gcr.io/teknoir/binfmt-qemu:v0.8-v7.0.0
+        docker buildx create --name mybuilder --use
+        docker buildx inspect --bootstrap
+    waitFor: ['-']
+
+  - id: BUILD-AND-PUSH-VERSIONED
+    name: gcr.io/cloud-builders/docker
+    entrypoint: 'bash'
+    args:
+      - -c
+      - |
+        set -eo pipefail
+        docker buildx build \
+          --platform=linux/arm/v7,linux/arm64/v8,linux/amd64 \
+          --push \
+          --label "git-commit=${SHORT_SHA}" \
+          --tag gcr.io/${PROJECT_ID}/mosquitto-exporter:${BRANCH_NAME}-${SHORT_SHA} \
+          .
+    waitFor: ['INIT-BUILDX_BUILDER']
+
+  - id: BUILD-AND-PUSH-LATEST
+    name: gcr.io/cloud-builders/docker
+    entrypoint: 'bash'
+    args:
+      - -c
+      - |
+        set -eo pipefail
+        if [ ${BRANCH_NAME} == 'master' ]; then
+          docker buildx build \
+            --platform=linux/arm/v7,linux/arm64/v8,linux/amd64 \
+            --push \
+            --label "git-commit=${SHORT_SHA}" \
+            --tag gcr.io/${PROJECT_ID}/mosquitto-exporter:latest \
+            .
+        fi
+    waitFor: ['BUILD-AND-PUSH-VERSIONED']
